@@ -1,3 +1,4 @@
 {
-    "mongoURI": "mongodb+srv://adarshtn:developerat2021@dev-daddy-develop.nihhv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+    "mongoURI": "mongodb+srv://adarshtn:developerat2021@dev-daddy-develop.nihhv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+    "jwtSecret": "insomnianights"
 }
