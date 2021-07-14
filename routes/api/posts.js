@@ -117,7 +117,7 @@ router.put('/like/:id', auth, async (req, res) => {
     res.json(post.likes);
   } catch (err) {
     if (err.kind === 'ObjectId')
-      return res.status(400).json({ msg: 'Post Not Found' });
+      return res.status(404).json({ msg: 'Post Not Found' });
     console.error(err.message);
     return res.status(500).send('Server Error');
   }
@@ -152,7 +152,7 @@ router.put('/unlike/:id', auth, async (req, res) => {
     res.json(post.likes);
   } catch (err) {
     if (err.kind === 'ObjectId')
-      return res.status(400).json({ msg: 'Post Not Found' });
+      return res.status(404).json({ msg: 'Post Not Found' });
     console.error(err.message);
     return res.status(500).send('Server Error');
   }
@@ -177,7 +177,7 @@ router.put('/comment/:id', [
 
     const post = await Post.findById(req.params.id);
     if(!post) {
-      return res.status(400).json({ msg: "Post not found" });
+      return res.status(404).json({ msg: "Post not found" });
     }
 
     const user = await User.findById(req.user.id).select('-password');
@@ -196,7 +196,52 @@ router.put('/comment/:id', [
 
   } catch (err) {
     if(err.kind === "ObjectId") {
-      res.status(400).json({ msg: "Post not found" });
+      res.status(404).json({ msg: "Post not found" });
+    }
+    console.error(err.message);
+    res.status(50).json({ msg: "Server Error" })
+  }
+})
+
+// @route    DELETE api/posts/comment/:id
+// @desc     Delete a comment on a post
+// @access   Private
+router.delete('/comment/:id/:comment_id', auth, async(req,res) => {
+  try {
+
+    const post = await Post.findById(req.params.id);
+
+    // Check if the post exists - else give the post not found error
+    if(!post) {
+      return res.status(404).json({ msg: "Post not found" });
+    }
+
+    // Check if comment exists
+    let removingComment = {};
+    let removingCommentIndex = -1;
+    post.comments.map((comment,index) => {
+      if(comment._id.toString() === req.params.comment_id) {
+        removingCommentIndex = index;
+        removingComment = comment;
+      }
+    });
+
+    if(removingCommentIndex === -1) {
+      return res.status(404).json({ msg: "Comment not found" });
+    } else {
+      // Check if the user is authorized to delete the comment he is trying to delete
+      if(removingComment.user.toString() === req.user.id) {
+        post.comments.splice(removingCommentIndex, 1);
+      } else {
+        res.status(401).json({ msg: "You are not authorized to delete other person's comments" })
+      }
+    }
+    await post.save();
+    res.json(post.comments);
+
+  } catch (err) {
+    if(err.kind === "ObjectId") {
+      res.status(404).json({ msg: "Post not found" });
     }
     console.error(err.message);
     res.status(50).json({ msg: "Server Error" })
