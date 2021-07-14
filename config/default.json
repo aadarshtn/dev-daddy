@@ -1,6 +1,6 @@
 {
-    "mongoURI": "mongodb+srv://adarshtn:developerat2021@dev-daddy-develop.nihhv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
-    "jwtSecret": "insomnianights",
-    "githubClientId": "38c866606a48780f11d0",
-    "githubSecret": "695cea9c7c769dadf6d58fb36d9118a0d939e6e8"
+  "mongoURI": "mongodb+srv://adarshtn:developerat2021@dev-daddy-develop.nihhv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+  "jwtSecret": "insomnianights",
+  "githubClientId": "38c866606a48780f11d0",
+  "githubSecret": "695cea9c7c769dadf6d58fb36d9118a0d939e6e8"
 }
