@@ -161,91 +161,89 @@ router.put('/unlike/:id', auth, async (req, res) => {
 // @route    PUT api/posts/comment/:id
 // @desc     Create a comment on a post
 // @access   Private
-router.put('/comment/:id', [
-  auth,
-  [
-    check('text', 'Text is required').not().isEmpty()
-  ]
-], async(req,res) => {
-
-  const errors = validationResult(req);
-  if(!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  try {
-
-    const post = await Post.findById(req.params.id);
-    if(!post) {
-      return res.status(404).json({ msg: "Post not found" });
+router.put(
+  '/comment/:id',
+  [auth, [check('text', 'Text is required').not().isEmpty()]],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
     }
 
-    const user = await User.findById(req.user.id).select('-password');
+    try {
+      const post = await Post.findById(req.params.id);
+      if (!post) {
+        return res.status(404).json({ msg: 'Post not found' });
+      }
 
-    const newComment = {
-      user: req.user.id,
-      text: req.body.text,
-      name: user.name,
-      avatar: user.avatar,
-    };
+      const user = await User.findById(req.user.id).select('-password');
 
-    post.comments.unshift(newComment);
+      const newComment = {
+        user: req.user.id,
+        text: req.body.text,
+        name: user.name,
+        avatar: user.avatar,
+      };
 
-    await post.save();
-    res.json(post.comments);
+      post.comments.unshift(newComment);
 
-  } catch (err) {
-    if(err.kind === "ObjectId") {
-      res.status(404).json({ msg: "Post not found" });
+      await post.save();
+      res.json(post.comments);
+    } catch (err) {
+      if (err.kind === 'ObjectId') {
+        res.status(404).json({ msg: 'Post not found' });
+      }
+      console.error(err.message);
+      res.status(500).json({ msg: 'Server Error' });
     }
-    console.error(err.message);
-    res.status(50).json({ msg: "Server Error" })
   }
-})
+);
 
 // @route    DELETE api/posts/comment/:id
 // @desc     Delete a comment on a post
 // @access   Private
-router.delete('/comment/:id/:comment_id', auth, async(req,res) => {
+router.delete('/comment/:id/:comment_id', auth, async (req, res) => {
   try {
-
     const post = await Post.findById(req.params.id);
 
     // Check if the post exists - else give the post not found error
-    if(!post) {
-      return res.status(404).json({ msg: "Post not found" });
+    if (!post) {
+      return res.status(404).json({ msg: 'Post not found' });
     }
 
     // Check if comment exists
     let removingComment = {};
     let removingCommentIndex = -1;
-    post.comments.map((comment,index) => {
-      if(comment._id.toString() === req.params.comment_id) {
+    post.comments.map((comment, index) => {
+      if (comment._id.toString() === req.params.comment_id) {
         removingCommentIndex = index;
         removingComment = comment;
       }
     });
 
-    if(removingCommentIndex === -1) {
-      return res.status(404).json({ msg: "Comment not found" });
+    if (removingCommentIndex === -1) {
+      return res.status(404).json({ msg: 'Comment not found' });
     } else {
       // Check if the user is authorized to delete the comment he is trying to delete
-      if(removingComment.user.toString() === req.user.id) {
+      if (removingComment.user.toString() === req.user.id) {
         post.comments.splice(removingCommentIndex, 1);
       } else {
-        res.status(401).json({ msg: "You are not authorized to delete other person's comments" })
+        res
+          .status(401)
+          .json({
+            msg: "You are not authorized to delete other person's comments",
+          });
       }
     }
     await post.save();
     res.json(post.comments);
-
   } catch (err) {
-    if(err.kind === "ObjectId") {
-      res.status(404).json({ msg: "Post not found" });
+    if (err.kind === 'ObjectId') {
+      res.status(404).json({ msg: 'Post not found' });
     }
     console.error(err.message);
-    res.status(50).json({ msg: "Server Error" })
+    res.status(500).json({ msg: 'Server Error' });
   }
-})
+});
 
 module.exports = router;
